@@ -10,6 +10,9 @@
 #include <mcl/stdint.hpp>
 #include <oaknut/code_block.hpp>
 
+#if defined(__APPLE__)
+#    include <libkern/OSCacheControl.h>
+#endif
 #if !defined(_WIN32)
 #    include <sys/mman.h>
 #endif
@@ -65,6 +68,8 @@ public:
         } else {
 #if defined(_WIN32)
             FlushInstructionCache(GetCurrentProcess(), mem, length);
+#elif defined(__APPLE__)
+            sys_icache_invalidate(mem, length);
 #else
             __builtin___clear_cache(reinterpret_cast<char*>(mem), reinterpret_cast<char*>(mem) + length);
 #endif
