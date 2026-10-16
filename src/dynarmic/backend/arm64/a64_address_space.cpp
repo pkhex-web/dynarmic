@@ -322,7 +322,7 @@ static void* EmitExclusiveWrite128CallTrampoline(oaknut::CodeGenerator& code, co
 }
 
 A64AddressSpace::A64AddressSpace(const A64::UserConfig& conf)
-        : AddressSpace(conf.code_cache_size)
+        : AddressSpace(conf.code_cache_size, conf.code_cache_rw, conf.code_cache_rx)
         , conf(conf) {
     EmitPrelude();
 }

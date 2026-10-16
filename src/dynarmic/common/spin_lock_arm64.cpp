@@ -5,6 +5,10 @@
 
 #include <mutex>
 
+#if defined(__APPLE__)
+#    include <TargetConditionals.h>
+#endif
+
 #include <oaknut/code_block.hpp>
 #include <oaknut/oaknut.hpp>
 
@@ -34,6 +38,22 @@ void EmitSpinLockLock(oaknut::CodeGenerator& code, oaknut::XReg ptr) {
 void EmitSpinLockUnlock(oaknut::CodeGenerator& code, oaknut::XReg ptr) {
     code.STLR(WZR, ptr);
 }
+
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+
+// iOS has no executable memory outside the code cache the host hands over, so this lock isn't generated.
+void SpinLock::Lock() {
+    int expected = 0;
+    while (!__atomic_compare_exchange_n(&storage, &expected, 1, true, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED)) {
+        expected = 0;
+    }
+}
+
+void SpinLock::Unlock() {
+    __atomic_store_n(&storage, 0, __ATOMIC_RELEASE);
+}
+
+#else
 
 namespace {
 
@@ -82,5 +102,7 @@ void SpinLock::Unlock() {
     std::call_once(flag, &SpinLockImpl::Initialize, impl);
     impl.unlock(&storage);
 }
+
+#endif
 
 }  // namespace Dynarmic

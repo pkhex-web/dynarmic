@@ -54,7 +54,7 @@ public:
 #if defined(MCL_ARCHITECTURE_X86_64)
     void Register(X64::BlockOfCode& code);
 #elif defined(MCL_ARCHITECTURE_ARM64)
-    void Register(oaknut::CodeBlock& mem, std::size_t mem_size);
+    void Register(std::uint32_t* code_begin, std::size_t code_size);
 #elif defined(MCL_ARCHITECTURE_RISCV)
     void Register(RV64::CodeBlock& mem, std::size_t mem_size);
 #else

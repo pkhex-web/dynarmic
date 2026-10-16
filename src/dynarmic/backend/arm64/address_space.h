@@ -9,11 +9,11 @@
 #include <optional>
 
 #include <mcl/stdint.hpp>
-#include <oaknut/code_block.hpp>
 #include <oaknut/oaknut.hpp>
 #include <tsl/robin_map.h>
 #include <tsl/robin_set.h>
 
+#include "dynarmic/backend/arm64/code_memory.h"
 #include "dynarmic/backend/arm64/emit_arm64.h"
 #include "dynarmic/backend/arm64/fastmem.h"
 #include "dynarmic/interface/halt_reason.h"
@@ -24,7 +24,7 @@ namespace Dynarmic::Backend::Arm64 {
 
 class AddressSpace {
 public:
-    explicit AddressSpace(size_t code_cache_size);
+    AddressSpace(size_t code_cache_size, void* code_cache_rw, void* code_cache_rx);
     virtual ~AddressSpace();
 
     virtual IR::Block GenerateIR(IR::LocationDescriptor) const = 0;
@@ -50,15 +50,11 @@ protected:
     virtual void RegisterNewBasicBlock(const IR::Block& block, const EmittedBlockInfo& block_info) = 0;
 
     void ProtectCodeMemory() {
-#if defined(DYNARMIC_ENABLE_NO_EXECUTE_SUPPORT) || defined(__APPLE__) || defined(__OpenBSD__)
         mem.protect();
-#endif
     }
 
     void UnprotectCodeMemory() {
-#if defined(DYNARMIC_ENABLE_NO_EXECUTE_SUPPORT) || defined(__APPLE__) || defined(__OpenBSD__)
         mem.unprotect();
-#endif
     }
 
     size_t GetRemainingSize();
@@ -70,7 +66,7 @@ protected:
     FakeCall FastmemCallback(u64 host_pc);
 
     const size_t code_cache_size;
-    oaknut::CodeBlock mem;
+    CodeMemory mem;
     oaknut::CodeGenerator code;
 
     // A IR::LocationDescriptor will have one current CodePtr.

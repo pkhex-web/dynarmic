@@ -238,6 +238,13 @@ struct UserConfig {
     // Maximum size is limited by the maximum length of a x86_64 / arm64 jump.
     size_t code_cache_size = 128 * 1024 * 1024;  // bytes
 
+    /// Memory for the code cache, for hosts where only the host can map executable memory, such as iOS.
+    /// Both map the same code_cache_size bytes: dynarmic writes code through code_cache_rw and runs it from
+    /// code_cache_rx. Pass the same pointer twice for a single mapping, which dynarmic switches between writable
+    /// and executable. The memory must outlive the Jit. When these are null, dynarmic maps the code cache itself.
+    void* code_cache_rw = nullptr;
+    void* code_cache_rx = nullptr;
+
     /// Internal use only
     bool very_verbose_debugging_output = false;
 };

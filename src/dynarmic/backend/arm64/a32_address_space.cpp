@@ -156,7 +156,7 @@ static void* EmitExclusiveWriteCallTrampoline(oaknut::CodeGenerator& code, const
 }
 
 A32AddressSpace::A32AddressSpace(const A32::UserConfig& conf)
-        : AddressSpace(conf.code_cache_size)
+        : AddressSpace(conf.code_cache_size, conf.code_cache_rw, conf.code_cache_rx)
         , conf(conf) {
     EmitPrelude();
 }
